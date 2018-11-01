@@ -72,7 +72,7 @@ def get_confounding_params(num_patients, chemo_coeff, radio_coeff):
     tumour_stage_centres.sort()
 
     # Parameters controlling sigmoid application probabilities
-    sigmoid_centre = calc_diameter(tumour_death_threshold) / 2.0 #* 2.0
+    sigmoid_centre = calc_diameter(tumour_death_threshold) * 2.0 #/ 2.0 #
 
     basic_params['chemo_sigmoid_intercepts'] = np.array([sigmoid_centre for i in patient_types])
     basic_params['radio_sigmoid_intercepts'] = np.array([sigmoid_centre for i in patient_types])

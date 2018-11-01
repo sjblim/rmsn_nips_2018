@@ -25,21 +25,29 @@ sns.set()
 ROOT_FOLDER = configs.ROOT_FOLDER
 MODEL_ROOT = configs.MODEL_ROOT
 
+expt_name = "treatment_effects"
 
 # EDIT ME ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Specify parameters for model to load - optimal set from paper listed
-action_inputs_only = ('treatment_rnn_action_inputs_only', 0.1, 3, 100, 128, 0.01, 2.0)
-action_w_trajectory_inputs = ('treatment_rnn', 0.1, 4, 100, 64, 0.01, 1.0)
-censor_w_action_inputs_only = ('censor_rnn_action_inputs_only', 0.2, 2, 100, 128, 0.01, 0.5)
-censor_w_trajectory_inputs = ('censor_rnn', 0.1, 4, 100, 64, 0.01, 2.0)
+action_inputs_only = configs.load_optimal_parameters('treatment_rnn_action_inputs_only',
+                                                     expt_name,
+                                                     add_net_name=True)
+action_w_trajectory_inputs = configs.load_optimal_parameters('treatment_rnn',
+                                                             expt_name,
+                                                             add_net_name=True)
+censor_w_action_inputs_only = configs.load_optimal_parameters('censor_rnn_action_inputs_only',
+                                                              expt_name,
+                                                              add_net_name=True)
+censor_w_trajectory_inputs = configs.load_optimal_parameters('censor_rnn',
+                                                             expt_name,
+                                                             add_net_name=True)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == "__main__":
 
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
-    # Default params:
-    expt_name = "treatment_effects"
     # Generate propensity weights for validation data as well - used for MSM which is calibrated on train + valid data
     b_with_validation = False
     # Generate non-stabilised IPTWs (default false)
@@ -95,12 +103,6 @@ if __name__ == "__main__":
     def get_predictions(config):
 
         net_name = config[0]
-        dropout_rate = config[1]
-        memory_multiplier = config[2]
-        num_epochs = config[3]
-        minibatch_size = config[4]
-        learning_rate = config[5]
-        max_norm = config[6]
 
         hidden_activation, output_activation = activation_map[net_name]
 
@@ -115,9 +117,17 @@ if __name__ == "__main__":
         validation_processed = core.get_processed_data(validation_data, scaling_data, b_predict_actions,
                                                        b_use_actions_only, b_predict_censoring)
 
-        softmax_size = 0
         num_features = training_processed['scaled_inputs'].shape[-1]  # 4 if not b_use_actions_only else 3
         num_outputs = training_processed['scaled_outputs'].shape[-1]  # 1 if not b_predict_actions else 3  # 5
+
+        # Unpack remaining variables
+        dropout_rate = config[1]
+        memory_multiplier = config[2] / num_features
+        num_epochs = config[3]
+        minibatch_size = config[4]
+        learning_rate = config[5]
+        max_norm = config[6]
+
 
 
         model_folder = os.path.join(MODEL_ROOT, net_name)

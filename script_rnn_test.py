@@ -32,12 +32,15 @@ ROOT_FOLDER = configs.ROOT_FOLDER
 MODEL_ROOT = configs.MODEL_ROOT
 RESULTS_FOLDER = configs.RESULTS_FOLDER
 
+# Default params:
+expt_name = "treatment_effects"
 
 # EDIT ME! ######################################################################################
 # Optimal network parameters to load for testing!
 configs = [
-            ('rnn_propensity_weighted', 0.1, 4, 100, 64, 0.01, 0.5),
-            #('rnn_model', 0.1, 4, 100, 64, 0.005, 0.5),
+configs.load_optimal_parameters('rnn_propensity_weighted',
+                                 expt_name,
+                                 add_net_name=True)
           ]
 
 ##################################################################################################
@@ -46,9 +49,6 @@ configs = [
 if __name__ == "__main__":
 
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-
-    # Default params:
-    expt_name = "treatment_effects"
 
     # Setup tensorflow
     tf_device = 'gpu'
@@ -72,15 +72,6 @@ if __name__ == "__main__":
     for config in configs:
 
         net_name = config[0]
-        dropout_rate = config[1]
-        memory_multiplier = config[2]
-        num_epochs = config[3]
-        minibatch_size = config[4]
-        learning_rate = config[5]
-        max_norm = config[6]
-        backprop_length = 60  # we've fixed this
-        hidden_activation = activation_map[net_name][0]
-        output_activation = activation_map[net_name][1]
 
         projection_map[net_name] = {}
 
@@ -126,6 +117,17 @@ if __name__ == "__main__":
                     num_features = training_processed['scaled_inputs'].shape[-1]  # 4 if not b_use_actions_only else 3
                     num_outputs = training_processed['scaled_outputs'].shape[-1]  # 1 if not b_predict_actions else 3  # 5
 
+                    # Pull remaining params
+                    dropout_rate = config[1]
+                    memory_multiplier = config[2] / num_features
+                    num_epochs = config[3]
+                    minibatch_size = config[4]
+                    learning_rate = config[5]
+                    max_norm = config[6]
+                    backprop_length = 60  # we've fixed this
+                    hidden_activation = activation_map[net_name][0]
+                    output_activation = activation_map[net_name][1]
+
                     # Run tests
                     model_folder = os.path.join(MODEL_ROOT, net_name)
 
@@ -162,9 +164,11 @@ if __name__ == "__main__":
 
     # In[*]: Save outputs
 
-    for win in mse_by_followup:
-        mse_by_followup[win].to_csv(os.path.join(RESULTS_FOLDER, "mse_by_followup_rnns" + str(win) + "_mse.csv"))
+    #for win in mse_by_followup:
+    #    mse_by_followup[win].to_csv(os.path.join(RESULTS_FOLDER, "mse_by_followup_rnns" + str(win) + "_mse.csv"))
 
     for k in projection_map:
         for i in projection_map[k]:
-            projection_map[k][i].to_csv(os.path.join(RESULTS_FOLDER, k + "_one_step_action_window-" + str(i) + "_mse.csv"))
+            #projection_map[k][i].to_csv(os.path.join(RESULTS_FOLDER, k + "_one_step_action_window-" + str(i) + "_mse.csv"))
+            projection_map[k][i].to_csv(
+                os.path.join(RESULTS_FOLDER, k + "_1_mse.csv"))

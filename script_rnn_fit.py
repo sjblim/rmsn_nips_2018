@@ -27,11 +27,11 @@ MODEL_ROOT = configs.MODEL_ROOT
 # EDIT ME! ################################################################################################
 # Defines specific parameters to train for - skips hyperparamter optimisation if so
 specifications = {
-    'rnn_propensity_weighted': (0.1, 4, 100, 64, 0.01, 0.5),
-    'treatment_rnn_action_inputs_only': (0.1, 3, 100, 128, 0.01, 2.0),
-    'treatment_rnn': (0.1, 4, 100, 64, 0.01, 1.0),
-    'censor_rnn_action_inputs_only': (0.2, 2, 100, 128, 0.01, 0.5),
-    'censor_rnn': (0.1, 4, 100, 64, 0.01, 2.0),
+     #'rnn_propensity_weighted': (0.1, 4, 100, 64, 0.01, 0.5),
+     #'treatment_rnn_action_inputs_only': (0.1, 3, 100, 128, 0.01, 2.0),
+     #'treatment_rnn': (0.1, 4, 100, 64, 0.01, 1.0),
+     #'censor_rnn_action_inputs_only': (0.2, 2, 100, 128, 0.01, 0.5),
+     #'censor_rnn': (0.1, 4, 100, 64, 0.01, 2.0),
 }
 ####################################################################################################################
 
@@ -82,6 +82,7 @@ if __name__ == "__main__":
                       'censor_rnn': ("tanh", 'sigmoid'),
                       'censor_rnn_action_inputs_only': ("tanh", 'sigmoid'),
                       }
+
     # Setup tensorflow
     tf_device = 'gpu'
     if tf_device == "cpu":
@@ -151,6 +152,7 @@ if __name__ == "__main__":
                 propensity_weights = np.load(os.path.join(MODEL_ROOT, "propensity_scores.npy"))
 
             logging.info("Net name = {}. Mean-adjusting!".format(net_name))
+
             propensity_weights /= propensity_weights.mean()
 
             training_processed['propensity_weights'] = propensity_weights

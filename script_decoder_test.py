@@ -24,17 +24,18 @@ RESULTS_FOLDER = configs.RESULTS_FOLDER
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
+expt_name = "treatment_effects"
 
 # EDIT ME! ######################################################################################
 # Which networks to load for testing
 decoder_specifications = {
-        'rnn_propensity_weighted_seq2seq': (0.1, 16, 100, 512, 0.001, 4.0),  # note this uses actual memory sizes now
-        'rnn_model_seq2seq': (0.1, 16, 100, 1024, 0.005, 2.0),
+        'rnn_propensity_weighted_seq2seq': configs.load_optimal_parameters('rnn_propensity_weighted_seq2seq',
+                                                                           expt_name)
     }
 
 encoder_specifications = {
-    'rnn_propensity_weighted': (0.1, 4, 100, 64, 0.01, 0.5),
-    'rnn_model': (0.1, 4, 100, 64, 0.005, 0.5)
+    'rnn_propensity_weighted': configs.load_optimal_parameters('rnn_propensity_weighted',
+                                                               expt_name)
 }
 
 net_names = ['rnn_propensity_weighted']
@@ -51,8 +52,6 @@ if __name__ == "__main__":
     b_apply_memory_adapter = True
     b_single_layer = True  # single or multilayer memory adapter
     max_coeff = 10
-
-    expt_name = "treatment_effects"
 
     activation_map = {'rnn_propensity_weighted': ("elu", 'linear'),
                       'rnn_propensity_weighted_den_only': ("elu", 'linear'),
@@ -131,7 +130,7 @@ if __name__ == "__main__":
         spec = encoder_specifications[net_name]
         logging.info("Using specifications for {}: {}".format(net_name, spec))
         dropout_rate = spec[0]
-        memory_multiplier = spec[1]
+        memory_multiplier = spec[1]/num_features
         num_epochs = spec[2]
         minibatch_size = spec[3]
         learning_rate = spec[4]
@@ -224,6 +223,10 @@ if __name__ == "__main__":
                     mse = mse.flatten()
 
                     for proj_idx in range(mse.shape[0]):
+
+                        if proj_idx > 4:
+                            break
+
                         if proj_idx not in projection_map[seq_net_name]:
                             projection_map[seq_net_name][proj_idx] = \
                                 pd.DataFrame([], index=[i for i in range(max_coeff + 1)],
@@ -232,13 +235,13 @@ if __name__ == "__main__":
                         projection_map[seq_net_name][proj_idx][chemo_coeff][radio_coeff] = mse[proj_idx]
 
 
-    # In[*]: Save percentage improvements
+    # In[*]: Save results
 
-    for k in results_map:
-        results_map[k].to_csv(os.path.join(RESULTS_FOLDER, k+"_mse.csv"))
+    #for k in results_map:
+    #    results_map[k].to_csv(os.path.join(RESULTS_FOLDER, k+"_mse.csv"))
 
     for k in projection_map:
         for i in projection_map[k]:
-            projection_map[k][i].to_csv(os.path.join(RESULTS_FOLDER, k + "_" + str(i+1) + "_mse.csv"))
+            projection_map[k][i].to_csv(os.path.join(RESULTS_FOLDER, k + "_" + str(i+2) + "_mse.csv"))
 
 

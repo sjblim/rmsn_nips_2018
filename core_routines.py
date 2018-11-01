@@ -173,6 +173,7 @@ def train(net_name,
 
                         if model_parameters['performance_metric'] == "mse":
                             validation_loss = np.sum((means - output)**2 * active_entries) / np.sum(active_entries)
+
                         elif model_parameters['performance_metric'] == "xentropy":
                             _, _,features_size = output.shape
                             partition_idx = features_size

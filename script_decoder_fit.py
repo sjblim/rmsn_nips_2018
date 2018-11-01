@@ -21,21 +21,20 @@ import core_routines as core
 ROOT_FOLDER = configs.ROOT_FOLDER
 MODEL_ROOT = configs.MODEL_ROOT
 RESULTS_FOLDER = configs.RESULTS_FOLDER
+expt_name = "treatment_effects"
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 # EDIT ME! ######################################################################################
-# Defines specific parameters to train for - skips hyperparamter optimisation if so
+# Defines specific parameters to train for - otherwise runs full hyperparameter optimisation
 decoder_specifications = {
-        'rnn_propensity_weighted': (0.1, 16, 100, 512, 0.001, 4.0),
-    }
+}
 
 # Optimal encoder to load for decoder training
 # - This allows for states from the encoder to be dumped, and decoder is intialised with them
 encoder_specifications = {
-    'rnn_propensity_weighted': (0.1, 4, 100, 64, 0.01, 0.5),
-    'rnn_model': (0.1, 4, 100, 64, 0.005, 0.5),
-    'rnn_propensity_weighted_logistic': (0.1, 3, 100, 128, 0.01, 1.0)
+    'rnn_propensity_weighted': configs.load_optimal_parameters('rnn_propensity_weighted',
+                                                               expt_name)
 }
 
 # Specify which networks to train - only use R-MSN by default. Full list in activation map
@@ -44,7 +43,7 @@ net_names = ['rnn_propensity_weighted']
 
 
 # Data processing Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def process_seq_data(data_map, states, projection_horizon=10, num_features_to_include=1e6):  #forecast 10 years into the future
+def process_seq_data(data_map, states, projection_horizon=5, num_features_to_include=1e6):  # forecast 10 years into the future
 
     def _check_shapes (array1, array2, dims):
         a1_shape = array1.shape
@@ -154,7 +153,6 @@ if __name__ == "__main__":
     b_apply_memory_adapter = True
     b_single_layer = True  # single layer for memory adapter
     specified_hyperparam_iterations = 20
-    expt_name = "treatment_effects"
 
     activation_map = {'rnn_propensity_weighted': ("elu", 'linear'),
                       'rnn_propensity_weighted_spec': ("elu", 'linear'),
@@ -192,7 +190,7 @@ if __name__ == "__main__":
     # Start Running hyperparam opt
     opt_params = {}
     for net_name in net_names:
-        max_hyperparam_runs = specified_hyperparam_iterations if net_name not in encoder_specifications else 1
+        max_hyperparam_runs = specified_hyperparam_iterations if net_name not in decoder_specifications else 1
 
 # In[*]: Prep data
 
@@ -244,7 +242,7 @@ if __name__ == "__main__":
         spec = encoder_specifications[net_name]
         logging.info("Using specifications for {}: {}".format(net_name, spec))
         dropout_rate = spec[0]
-        memory_multiplier = spec[1]
+        memory_multiplier = spec[1] / num_features
         num_epochs = spec[2]
         minibatch_size = spec[3]
         learning_rate = spec[4]
