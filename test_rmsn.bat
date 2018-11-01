@@ -11,7 +11,7 @@ echo 1 - Fitting Propensity Networks
 python script_rnn_fit.py propensity_networks
 
 echo 2 - Generating Propensity Scores  # models to used defined at the start of script
-pytpython script_propensity_generation.py
+python script_propensity_generation.py
 
 echo 3 - Fitting R-MSN Encoder 
 python script_rnn_fit.py encoder
