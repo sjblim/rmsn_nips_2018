@@ -1,5 +1,5 @@
 # Forecasting Treatment Responses Over Time Using Recurrent Marginal Structural Networks
-> by Bryan Lim, Ahmed Alaa and Mihaela van der Schaar, **NIPS 2018**
+> by Bryan Lim, Ahmed Alaa and Mihaela van der Schaar, **NeurIPS 2018**
 
 ## Usage instructions
 * To generate a new simulation, run hyperparameter optimisation and tests for the RMSN use : 
